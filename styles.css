@@ -3,7 +3,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
-  /* Dark Red Color Palette */
   --bg-primary: #0a0a0a;
   --bg-secondary: #111111;
   --bg-tertiary: #1a1010;
@@ -12,7 +11,6 @@
   --bg-input: #0d0808;
   --bg-input-focus: #120a0a;
 
-  /* Red Accents */
   --red-900: #3b0000;
   --red-800: #5c0a0a;
   --red-700: #7a1111;
@@ -31,13 +29,11 @@
   --text-muted: #6b5555;
   --text-bright: #fff0f0;
 
-  /* Border Colors */
   --border-primary: #2a1515;
   --border-secondary: #3a1f1f;
   --border-accent: #5c1a1a;
   --border-glow: rgba(185, 28, 28, 0.4);
 
-  /* Gradients */
   --gradient-primary: linear-gradient(135deg, #1a0808 0%, #0a0a0a 100%);
   --gradient-card: linear-gradient(145deg, #181010 0%, #0f0808 100%);
   --gradient-header: linear-gradient(
@@ -55,20 +51,17 @@
   --gradient-btn: linear-gradient(135deg, #991a1a 0%, #b91c1c 100%);
   --gradient-btn-hover: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
 
-  /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 20px rgba(185, 28, 28, 0.15);
   --shadow-glow-strong: 0 0 40px rgba(185, 28, 28, 0.25);
 
-  /* Spacing */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -770,9 +763,6 @@ button {
   letter-spacing: 0.2px;
 }
 
-/* ================================================
-   RADIO BUTTONS
-   ================================================ */
 .radio-group {
   display: flex;
   align-items: center;
@@ -820,9 +810,6 @@ button {
   color: var(--text-secondary);
 }
 
-/* ================================================
-   ICON UPLOAD
-   ================================================ */
 .icon-upload {
   width: 80px;
   height: 80px;
@@ -844,9 +831,6 @@ button {
   color: var(--red-400);
 }
 
-/* ================================================
-   OPTIONS GRID
-   ================================================ */
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -860,9 +844,6 @@ button {
   flex-wrap: wrap;
 }
 
-/* ================================================
-   STATUS BAR
-   ================================================ */
 .status-bar {
   display: flex;
   align-items: center;
@@ -924,9 +905,6 @@ button {
   box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
 }
 
-/* ================================================
-   DASHBOARD
-   ================================================ */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -984,9 +962,6 @@ button {
   color: var(--text-secondary);
 }
 
-/* ================================================
-   CONNECTIONS TABLE
-   ================================================ */
 .table-wrapper {
   overflow-x: auto;
 }
@@ -1059,9 +1034,6 @@ button {
   opacity: 0.6;
 }
 
-/* ================================================
-   ASSEMBLY SECTION SPECIAL
-   ================================================ */
 .assembly-grid {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1667,4 +1639,3 @@ textarea.form-input {
 .context-menu.visible {
   display: block;
 }
-
